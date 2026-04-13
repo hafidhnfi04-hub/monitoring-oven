@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Monitoring Oven Tembakau | 2 Termokopel + DHT22 + PID Control</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="dashboard">
+    <!-- HEADER -->
+    <div class="header">
+        <div class="title">
+            <h1>🌾 MONITORING OVEN PENGERING TEMBAKAU</h1>
+            <p><span>🔥 2 Termokopel (TC1 & TC2) | 💧 DHT22 (Kelembaban)</span> <span class="badge">Sistem PID + Real-time</span></p>
+        </div>
+        <div class="sim-status" id="simStatusText">🟢 Sistem Aktif (Update 2 detik)</div>
+    </div>
+
+    <div class="monitor-grid">
+        <!-- KIRI: Sensor Panel + Grafik Terpisah -->
+        <div class="sensor-panel">
+            <div class="sensor-triple">
+                <!-- Termokopel 1 -->
+                <div class="card tc1">
+                    <div class="card-label">🔥 TERMOKOPEL 1</div>
+                    <div class="value"><span id="tc1Value">0.0</span><span class="unit">°C</span></div>
+                    <div class="status-badge" id="tc1Status">Normal</div>
+                </div>
+                <!-- Termokopel 2 -->
+                <div class="card tc2">
+                    <div class="card-label">🔥 TERMOKOPEL 2</div>
+                    <div class="value"><span id="tc2Value">0.0</span><span class="unit">°C</span></div>
+                    <div class="status-badge" id="tc2Status">Normal</div>
+                </div>
+                <!-- DHT22 Kelembaban -->
+                <div class="card dht">
+                    <div class="card-label">💧 DHT22 (RH)</div>
+                    <div class="value"><span id="humValue">0.0</span><span class="unit">% RH</span></div>
+                    <div class="status-badge" id="humStatus">Normal</div>
+                </div>
+            </div>
+
+            <!-- Rata-rata Suhu -->
+            <div class="avg-temp-bar">
+                <span>📊 Rata-rata Suhu Oven: </span>
+                <strong id="avgTemp">0.0</strong> °C
+                <span style="margin-left: 20px;">🎯 Setpoint: </span>
+                <strong id="setpointDisplay">65.0</strong> °C
+                <span style="margin-left: 20px;">⏱️ Waktu Sistem: </span>
+                <strong id="systemTime">00:00:00</strong>
+            </div>
+
+            <!-- 3 Grafik Terpisah dengan Chart.js -->
+            <div class="charts-container">
+                <!-- Grafik Termokopel 1 -->
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <span class="chart-label tc1-label">🌡️ TERMOKOPEL 1 (°C)</span>
+                        <span class="chart-current" id="tc1Current">0.0°C</span>
+                    </div>
+                    <canvas id="tc1Chart"></canvas>
+                    <div class="chart-note">Skala: 10°C - 90°C (Interval 10°C) | 60 Data Point (2 menit history) | Sumbu X = Waktu Real (HH:MM:SS)</div>
+                </div>
+
+                <!-- Grafik Termokopel 2 -->
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <span class="chart-label tc2-label">🌡️ TERMOKOPEL 2 (°C)</span>
+                        <span class="chart-current" id="tc2Current">0.0°C</span>
+                    </div>
+                    <canvas id="tc2Chart"></canvas>
+                    <div class="chart-note">Skala: 10°C - 90°C (Interval 10°C) | 60 Data Point (2 menit history) | Sumbu X = Waktu Real (HH:MM:SS)</div>
+                </div>
+
+                <!-- Grafik DHT22 Kelembaban -->
+                <div class="chart-wrapper">
+                    <div class="chart-header">
+                        <span class="chart-label hum-label">💧 KELEMBABAN DHT22 (% RH)</span>
+                        <span class="chart-current" id="humCurrent">0.0%</span>
+                    </div>
+                    <canvas id="humChart"></canvas>
+                    <div class="chart-note">Skala: 0% - 100% RH (Interval 10%) | 60 Data Point (2 menit history) | Sumbu X = Waktu Real (HH:MM:SS)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- KANAN: PID Monitoring Panel (Read Only) -->
+        <div class="info-panel">
+            <!-- PID Monitoring Panel - Hanya untuk monitoring -->
+            <div class="pid-monitor-panel">
+                <div class="panel-title">🎛️ MONITORING PID (Pengatur Suhu)</div>
+                <div class="pid-monitor-group">
+                    <div class="pid-monitor-item">
+                        <label>🎯 Setpoint (°C)</label>
+                        <div class="readonly-value" id="setpointReadonly">65.0</div>
+                    </div>
+                    <div class="pid-monitor-item">
+                        <label>📈 Kp (Proporsional)</label>
+                        <div class="readonly-value" id="kpReadonly">2.5</div>
+                    </div>
+                    <div class="pid-monitor-item">
+                        <label>📉 Ki (Integral)</label>
+                        <div class="readonly-value" id="kiReadonly">0.8</div>
+                    </div>
+                    <div class="pid-monitor-item">
+                        <label>📊 Kd (Derivatif)</label>
+                        <div class="readonly-value" id="kdReadonly">1.2</div>
+                    </div>
+                </div>
+                <div class="pid-output">
+                    <span>⚙️ Output PID (Duty Cycle Heater): </span>
+                    <strong id="pidOutputValue">0.0</strong> %
+                </div>
+                <div class="control-note">
+                    ℹ️ Simulasi PID: Berdasarkan error (setpoint - rata2 suhu) | Hanya untuk MONITORING
+                </div>
+            </div>
+
+            <!-- Threshold Info Only -->
+            <div class="threshold-panel">
+                <div class="threshold-header">
+                    <span>📊 BATAS IDEAL OPERASIONAL</span>
+                </div>
+                <div class="threshold-items">
+                    <div class="threshold-item">
+                        <span class="threshold-label">🌡️ Suhu Ideal:</span>
+                        <span class="threshold-value">55 - 70 °C</span>
+                    </div>
+                    <div class="threshold-item">
+                        <span class="threshold-label">⚠️ Suhu Kritis:</span>
+                        <span class="threshold-value">&gt; 80 °C</span>
+                    </div>
+                    <div class="threshold-item">
+                        <span class="threshold-label">💧 RH Ideal:</span>
+                        <span class="threshold-value">35 - 55 %</span>
+                    </div>
+                    <div class="threshold-item">
+                        <span class="threshold-label">⚠️ RH Kritis:</span>
+                        <span class="threshold-value">&gt; 68 %</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Waktu Running -->
+            <div class="running-time-panel">
+                <div class="running-time-header">
+                    <span>⏱️ WAKTU BERJALAN SISTEM</span>
+                </div>
+                <div class="running-time-display">
+                    <div class="time-box">
+                        <span class="time-label">Jam</span>
+                        <span class="time-value" id="runningHours">00</span>
+                    </div>
+                    <span class="time-separator">:</span>
+                    <div class="time-box">
+                        <span class="time-label">Menit</span>
+                        <span class="time-value" id="runningMinutes">00</span>
+                    </div>
+                    <span class="time-separator">:</span>
+                    <div class="time-box">
+                        <span class="time-label">Detik</span>
+                        <span class="time-value" id="runningSeconds">00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        ⚙️ Data update 2 detik | 60 data point (history 2 menit) | Skala suhu 10°C - 90°C (interval 10°C) | PID hanya untuk MONITORING
+    </footer>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
