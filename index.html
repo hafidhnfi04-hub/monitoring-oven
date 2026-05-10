@@ -2,174 +2,275 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Monitoring Oven Tembakau | 2 Termokopel + DHT22 + PID Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Monitoring Oven Tembakau + Kontrol 2 Relay</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
 </head>
 <body>
-<div class="dashboard">
+<div class="container">
     <!-- HEADER -->
-    <div class="header">
-        <div class="title">
-            <h1>🌾 MONITORING OVEN PENGERING TEMBAKAU</h1>
-            <p><span>🔥 2 Termokopel (TC1 & TC2) | 💧 DHT22 (Kelembaban)</span> <span class="badge">Sistem PID + Real-time</span></p>
-        </div>
-        <div class="sim-status" id="simStatusText">🟢 Sistem Aktif (Update 2 detik)</div>
-    </div>
-
-    <div class="monitor-grid">
-        <!-- KIRI: Sensor Panel + Grafik Terpisah -->
-        <div class="sensor-panel">
-            <div class="sensor-triple">
-                <!-- Termokopel 1 -->
-                <div class="card tc1">
-                    <div class="card-label">🔥 TERMOKOPEL 1</div>
-                    <div class="value"><span id="tc1Value">0.0</span><span class="unit">°C</span></div>
-                    <div class="status-badge" id="tc1Status">Normal</div>
-                </div>
-                <!-- Termokopel 2 -->
-                <div class="card tc2">
-                    <div class="card-label">🔥 TERMOKOPEL 2</div>
-                    <div class="value"><span id="tc2Value">0.0</span><span class="unit">°C</span></div>
-                    <div class="status-badge" id="tc2Status">Normal</div>
-                </div>
-                <!-- DHT22 Kelembaban -->
-                <div class="card dht">
-                    <div class="card-label">💧 DHT22 (RH)</div>
-                    <div class="value"><span id="humValue">0.0</span><span class="unit">% RH</span></div>
-                    <div class="status-badge" id="humStatus">Normal</div>
-                </div>
+    <header class="header">
+        <div class="header-content">
+            <div class="title-section">
+                <h1>🌾 MONITORING OVEN PENGERING TEMBAKAU</h1>
+                <p class="subtitle">🔥 2 Termokopel (TC1 & TC2) | 💧 DHT22 (Kelembaban) | 🎛️ Sistem PID + 2 Relay Kontrol</p>
             </div>
-
-            <!-- Rata-rata Suhu -->
-            <div class="avg-temp-bar">
-                <span>📊 Rata-rata Suhu Oven: </span>
-                <strong id="avgTemp">0.0</strong> °C
-                <span style="margin-left: 20px;">🎯 Setpoint: </span>
-                <strong id="setpointDisplay">65.0</strong> °C
-                <span style="margin-left: 20px;">⏱️ Waktu Sistem: </span>
-                <strong id="systemTime">00:00:00</strong>
-            </div>
-
-            <!-- 3 Grafik Terpisah dengan Chart.js -->
-            <div class="charts-container">
-                <!-- Grafik Termokopel 1 -->
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-label tc1-label">🌡️ TERMOKOPEL 1 (°C)</span>
-                        <span class="chart-current" id="tc1Current">0.0°C</span>
-                    </div>
-                    <canvas id="tc1Chart"></canvas>
-                    <div class="chart-note">Skala: 10°C - 90°C (Interval 10°C) | 60 Data Point (2 menit history) | Sumbu X = Waktu Real (HH:MM:SS)</div>
-                </div>
-
-                <!-- Grafik Termokopel 2 -->
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-label tc2-label">🌡️ TERMOKOPEL 2 (°C)</span>
-                        <span class="chart-current" id="tc2Current">0.0°C</span>
-                    </div>
-                    <canvas id="tc2Chart"></canvas>
-                    <div class="chart-note">Skala: 10°C - 90°C (Interval 10°C) | 60 Data Point (2 menit history) | Sumbu X = Waktu Real (HH:MM:SS)</div>
-                </div>
-
-                <!-- Grafik DHT22 Kelembaban -->
-                <div class="chart-wrapper">
-                    <div class="chart-header">
-                        <span class="chart-label hum-label">💧 KELEMBABAN DHT22 (% RH)</span>
-                        <span class="chart-current" id="humCurrent">0.0%</span>
-                    </div>
-                    <canvas id="humChart"></canvas>
-                    <div class="chart-note">Skala: 0% - 100% RH (Interval 10%) | 60 Data Point (2 menit history) | Sumbu X = Waktu Real (HH:MM:SS)</div>
-                </div>
+            <div class="status-section">
+                <div class="sim-status" id="simStatusText">🟢 Terhubung ke ESP32</div>
             </div>
         </div>
+    </header>
 
-        <!-- KANAN: PID Monitoring Panel (Read Only) -->
-        <div class="info-panel">
-            <!-- PID Monitoring Panel - Hanya untuk monitoring -->
-            <div class="pid-monitor-panel">
-                <div class="panel-title">🎛️ MONITORING PID (Pengatur Suhu)</div>
-                <div class="pid-monitor-group">
-                    <div class="pid-monitor-item">
-                        <label>🎯 Setpoint (°C)</label>
-                        <div class="readonly-value" id="setpointReadonly">65.0</div>
-                    </div>
-                    <div class="pid-monitor-item">
-                        <label>📈 Kp (Proporsional)</label>
-                        <div class="readonly-value" id="kpReadonly">2.5</div>
-                    </div>
-                    <div class="pid-monitor-item">
-                        <label>📉 Ki (Integral)</label>
-                        <div class="readonly-value" id="kiReadonly">0.8</div>
-                    </div>
-                    <div class="pid-monitor-item">
-                        <label>📊 Kd (Derivatif)</label>
-                        <div class="readonly-value" id="kdReadonly">1.2</div>
-                    </div>
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- SENSOR CARDS ROW - TANPA STATUS TEXT DI BAWAH NILAI -->
+        <section class="sensor-cards">
+            <div class="card tc1">
+                <div class="card-info">
+                    <div class="card-label">TERMOKOPEL 1</div>
+                    <div class="card-value"><span id="tc1Value">0.0</span><span class="unit">°C</span></div>
+                    <!-- Status text dihapus -->
                 </div>
-                <div class="pid-output">
-                    <span>⚙️ Output PID (Duty Cycle Heater): </span>
-                    <strong id="pidOutputValue">0.0</strong> %
+            </div>
+            <div class="card tc2">
+                <div class="card-info">
+                    <div class="card-label">TERMOKOPEL 2</div>
+                    <div class="card-value"><span id="tc2Value">0.0</span><span class="unit">°C</span></div>
+                    <!-- Status text dihapus -->
                 </div>
-                <div class="control-note">
-                    ℹ️ Simulasi PID: Berdasarkan error (setpoint - rata2 suhu) | Hanya untuk MONITORING
+            </div>
+            <div class="card dht">
+                <div class="card-info">
+                    <div class="card-label">KELEMBABAN (RH)</div>
+                    <div class="card-value"><span id="humValue">0.0</span><span class="unit">%</span></div>
+                    <!-- Status text dihapus -->
+                </div>
+            </div>
+        </section>
+
+        <!-- INFO BAR -->
+        <section class="info-bar">
+            <div class="info-item">
+                <span class="info-label">📊 Rata-rata Suhu</span>
+                <strong class="info-value" id="avgTemp">0.0</strong>
+                <span class="info-unit">°C</span>
+            </div>
+            <div class="info-divider"></div>
+            <div class="info-item">
+                <span class="info-label">🎯 Setpoint</span>
+                <strong class="info-value" id="setpointDisplay">50.0</strong>
+                <span class="info-unit">°C</span>
+            </div>
+            <div class="info-divider"></div>
+            <div class="info-item">
+                <span class="info-label">⏱️ Waktu ESP32</span>
+                <strong class="info-value" id="espTime">--:--:--</strong>
+            </div>
+        </section>
+
+        <!-- FIREBASE STATUS -->
+        <div class="firebase-status" id="firebaseStatus">
+            🔄 Menghubungkan ke Firebase...
+        </div>
+
+        <!-- TWO COLUMN LAYOUT -->
+        <div class="two-columns">
+            <!-- LEFT COLUMN: CHARTS -->
+            <div class="left-column">
+                <div class="section-title">
+                    <span class="title-icon">📈</span>
+                    <h2>GRAFIK MONITORING (30 MENIT HISTORY)</h2>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <span class="chart-icon">🌡️</span>
+                                <span class="chart-label tc1-label">TERMOKOPEL 1 (°C)</span>
+                            </div>
+                            <div class="chart-current" id="tc1Current">0.0°C</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="tc1Chart"></canvas>
+                        </div>
+                        <div class="chart-note">📊 Skala: 0°C - 120°C | 📈 900 Data Point | ⏱️ 30 MENIT History | 🔵 Titik data setiap 2 MENIT (15 TITIK)</div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <span class="chart-icon">🌡️</span>
+                                <span class="chart-label tc2-label">TERMOKOPEL 2 (°C)</span>
+                            </div>
+                            <div class="chart-current" id="tc2Current">0.0°C</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="tc2Chart"></canvas>
+                        </div>
+                        <div class="chart-note">📊 Skala: 0°C - 120°C | 📈 900 Data Point | ⏱️ 30 MENIT History | 🔵 Titik data setiap 2 MENIT (15 TITIK)</div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <div class="chart-title">
+                                <span class="chart-icon">💧</span>
+                                <span class="chart-label hum-label">KELEMBABAN (% RH)</span>
+                            </div>
+                            <div class="chart-current" id="humCurrent">0.0%</div>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="humChart"></canvas>
+                        </div>
+                        <div class="chart-note">📊 Skala: 0% - 100% RH | 📈 900 Data Point | ⏱️ 30 MENIT History | 🔵 Titik data setiap 2 MENIT (15 TITIK)</div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Threshold Info Only -->
-            <div class="threshold-panel">
-                <div class="threshold-header">
-                    <span>📊 BATAS IDEAL OPERASIONAL</span>
+            <!-- RIGHT COLUMN: CONTROL PANELS -->
+            <div class="right-column">
+                <!-- RELAY PANEL -->
+                <div class="panel relay-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">🔌</span>
+                        <h3>KONTROL RELAY</h3>
+                    </div>
+                    <div class="relay-rules">
+                        <span class="rule-on">🔴 ON saat suhu < setpoint</span>
+                        <span class="rule-off">⚪ OFF saat suhu ≥ setpoint</span>
+                    </div>
+                    
+                    <div class="relay-list">
+                        <!-- Relay 1 -->
+                        <div class="relay-card" id="relay1Card">
+                            <div class="relay-header">
+                                <div class="relay-info">
+                                    <span class="relay-number">RELAY 1 (Pemanas)</span>
+                                </div>
+                                <span class="relay-badge" id="relay1Badge">OFF</span>
+                            </div>
+                            <div class="relay-status">
+                                <div class="relay-indicator" id="relay1Indicator"></div>
+                                <div class="relay-state" id="relay1State">⚪ Relay OFF</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Relay 2 -->
+                        <div class="relay-card" id="relay2Card">
+                            <div class="relay-header">
+                                <div class="relay-info">
+                                    <span class="relay-number">RELAY 2 (Pendingin)</span>
+                                </div>
+                                <span class="relay-badge" id="relay2Badge">OFF</span>
+                            </div>
+                            <div class="relay-status">
+                                <div class="relay-indicator" id="relay2Indicator"></div>
+                                <div class="relay-state" id="relay2State">⚪ Relay OFF</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="threshold-items">
-                    <div class="threshold-item">
-                        <span class="threshold-label">🌡️ Suhu Ideal:</span>
-                        <span class="threshold-value">55 - 70 °C</span>
-                    </div>
-                    <div class="threshold-item">
-                        <span class="threshold-label">⚠️ Suhu Kritis:</span>
-                        <span class="threshold-value">&gt; 80 °C</span>
-                    </div>
-                    <div class="threshold-item">
-                        <span class="threshold-label">💧 RH Ideal:</span>
-                        <span class="threshold-value">35 - 55 %</span>
-                    </div>
-                    <div class="threshold-item">
-                        <span class="threshold-label">⚠️ RH Kritis:</span>
-                        <span class="threshold-value">&gt; 68 %</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Waktu Running -->
-            <div class="running-time-panel">
-                <div class="running-time-header">
-                    <span>⏱️ WAKTU BERJALAN SISTEM</span>
+                <!-- PID & DIMMER PANEL -->
+                <div class="panel pid-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">🎛️</span>
+                        <h3>KONTROL PID & DIMMER</h3>
+                    </div>
+                    <div class="pid-grid">
+                        <div class="pid-item">
+                            <label>Setpoint</label>
+                            <div class="pid-value" id="setpointReadonly">50.0</div>
+                            <span class="pid-unit">°C</span>
+                        </div>
+                        <div class="pid-item">
+                            <label>Kp</label>
+                            <div class="pid-value" id="kpReadonly">3.0</div>
+                        </div>
+                        <div class="pid-item">
+                            <label>Ki</label>
+                            <div class="pid-value" id="kiReadonly">0.30</div>
+                        </div>
+                        <div class="pid-item">
+                            <label>Kd</label>
+                            <div class="pid-value" id="kdReadonly">0.15</div>
+                        </div>
+                    </div>
+                    <div class="pid-output">
+                        <span>⚡ Dimmer/PWM</span>
+                        <strong id="dimmerValue">0</strong>
+                        <span>%</span>
+                    </div>
+                    <div class="mode-status" id="modeStatus">
+                        🎮 Mode: MANUAL
+                    </div>
                 </div>
-                <div class="running-time-display">
-                    <div class="time-box">
-                        <span class="time-label">Jam</span>
-                        <span class="time-value" id="runningHours">00</span>
+
+                <!-- THRESHOLD PANEL -->
+                <div class="panel threshold-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">📊</span>
+                        <h3>BATAS OPERASIONAL</h3>
                     </div>
-                    <span class="time-separator">:</span>
-                    <div class="time-box">
-                        <span class="time-label">Menit</span>
-                        <span class="time-value" id="runningMinutes">00</span>
+                    <div class="threshold-grid">
+                        <div class="threshold-item">
+                            <span class="threshold-label">🌡️ Suhu Ideal</span>
+                            <span class="threshold-value">45 - 60 °C</span>
+                        </div>
+                        <div class="threshold-item">
+                            <span class="threshold-label">⚠️ Suhu Kritis</span>
+                            <span class="threshold-value">&gt; 70 °C</span>
+                        </div>
+                        <div class="threshold-item">
+                            <span class="threshold-label">💧 RH Ideal</span>
+                            <span class="threshold-value">40 - 60 %</span>
+                        </div>
+                        <div class="threshold-item">
+                            <span class="threshold-label">⚠️ RH Kritis</span>
+                            <span class="threshold-value">&gt; 75 %</span>
+                        </div>
                     </div>
-                    <span class="time-separator">:</span>
-                    <div class="time-box">
-                        <span class="time-label">Detik</span>
-                        <span class="time-value" id="runningSeconds">00</span>
+                </div>
+
+                <!-- TIMESTAMP PANEL -->
+                <div class="panel running-panel">
+                    <div class="panel-header">
+                        <span class="panel-icon">⏱️</span>
+                        <h3>WAKTU OPERASI ESP32</h3>
+                    </div>
+                    <div class="running-time">
+                        <div class="time-unit">
+                            <span class="time-label">Hari</span>
+                            <span class="time-number" id="espDays">00</span>
+                        </div>
+                        <span class="time-sep">:</span>
+                        <div class="time-unit">
+                            <span class="time-label">Jam</span>
+                            <span class="time-number" id="espHours">00</span>
+                        </div>
+                        <span class="time-sep">:</span>
+                        <div class="time-unit">
+                            <span class="time-label">Menit</span>
+                            <span class="time-number" id="espMinutes">00</span>
+                        </div>
+                        <span class="time-sep">:</span>
+                        <div class="time-unit">
+                            <span class="time-label">Detik</span>
+                            <span class="time-number" id="espSeconds">00</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <footer>
-        ⚙️ Data update 2 detik | 60 data point (history 2 menit) | Skala suhu 10°C - 90°C (interval 10°C) | PID hanya untuk MONITORING
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>⚙️ Data real-time dari ESP32 | Update setiap data berubah | 📈 900 data point (30 menit history) | 🔵 Titik data setiap 2 menit (15 titik) | 📡 Data tersimpan di Firebase Realtime Database</p>
     </footer>
 </div>
 
