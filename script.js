@@ -57,22 +57,29 @@ function updateAllDisplay() {
     ds1Value.innerHTML = `${ds1.toFixed(1)} <small style="font-size:0.8rem;">°C</small>`;
     ds2Value.innerHTML = `${ds2.toFixed(1)} <small style="font-size:0.8rem;">°C</small>`;
     humValue.innerHTML = `${humidity.toFixed(1)} <small style="font-size:0.8rem;">%</small>`;
-    dimmerValue.innerHTML = `${dimmer} <small style="font-size:0.8rem;">%</small>`;
+    
+    // ===== DIMMER =====
+    if (dimmer !== undefined && dimmer !== null && !isNaN(dimmer)) {
+        dimmerValue.innerHTML = `${dimmer} <small style="font-size:0.8rem;">%</small>`;
+    } else {
+        dimmerValue.innerHTML = `0 <small style="font-size:0.8rem; color:#e74a3b;">% (no data)</small>`;
+    }
+    
     setpointReadonly.textContent = setpoint.toFixed(1);
     kpReadonly.textContent = kp.toFixed(2);
-    
-    // PERBAIKAN: Ki pakai 3 desimal
     kiReadonly.textContent = ki.toFixed(3);
-    
     kdReadonly.textContent = kd.toFixed(2);
     
     // Mode
     if (mode === 2) {
         modeDisplay.textContent = 'AUTO';
         modeDisplay.style.color = '#1cc88a';
-    } else {
+    } else if (mode === 1) {
         modeDisplay.textContent = 'MANUAL';
         modeDisplay.style.color = '#f6c23e';
+    } else {
+        modeDisplay.textContent = 'UNKNOWN';
+        modeDisplay.style.color = '#e74a3b';
     }
     
     // Timestamp ESP32
@@ -81,6 +88,19 @@ function updateAllDisplay() {
     } else {
         espTime.textContent = '--:--:--';
     }
+    
+    // ===== DEBUG LENGKAP =====
+    console.log('📊 DATA DARI FIREBASE:');
+    console.log('  ds1:', ds1);
+    console.log('  ds2:', ds2);
+    console.log('  humidity:', humidity);
+    console.log('  setpoint:', setpoint);
+    console.log('  dimmer:', dimmer);
+    console.log('  kp:', kp);
+    console.log('  ki:', ki);
+    console.log('  kd:', kd);
+    console.log('  mode:', mode);
+    console.log('  timestamp:', espTimestamp);
     
     // Tambahkan ke history
     const currentTime = getCurrentTimeStr();
@@ -97,9 +117,6 @@ function updateAllDisplay() {
     while (historySetpoint.length > HISTORY_SIZE) historySetpoint.shift();
     
     updateCharts();
-    
-    console.log('📊 Data updated:', { ds1, ds2, humidity, setpoint, dimmer, ki, espTimestamp });
-    console.log('📈 History size:', historyTimestamps.length);
 }
 
 // ======================== FIREBASE ========================
@@ -114,14 +131,25 @@ function startRealtimeListening() {
     
     realtimeListener = ref.on('value', (snapshot) => {
         const data = snapshot.val();
-        console.log('📥 Data dari Firebase:', data);
+        console.log('📥 RAW DATA dari Firebase:', JSON.stringify(data, null, 2));
         
         if (data) {
+            // ===== BACA SEMUA DATA =====
             ds1 = data.ds18b20_1 !== undefined ? parseFloat(data.ds18b20_1) : ds1;
             ds2 = data.ds18b20_2 !== undefined ? parseFloat(data.ds18b20_2) : ds2;
             humidity = data.kelembaban !== undefined ? parseFloat(data.kelembaban) : humidity;
             setpoint = data.setpoint !== undefined ? parseFloat(data.setpoint) : setpoint;
-            dimmer = data.dimmer !== undefined ? data.dimmer : dimmer;
+            
+            // ===== DIMMER =====
+            if (data.dimmer !== undefined) {
+                dimmer = data.dimmer;
+                console.log('✅ Dimmer ditemukan:', dimmer);
+            } else {
+                console.log('⚠️ Dimmer TIDAK DITEMUKAN di data!');
+                console.log('📋 Key yang tersedia:', Object.keys(data));
+                dimmer = 0;
+            }
+            
             kp = data.kp !== undefined ? parseFloat(data.kp) : kp;
             ki = data.ki !== undefined ? parseFloat(data.ki) : ki;
             kd = data.kd !== undefined ? parseFloat(data.kd) : kd;
@@ -258,6 +286,7 @@ function initHistoryData() {
 // ======================== INIT ========================
 window.onload = function() {
     console.log('🚀 Dashboard dimulai...');
+    console.log('📋 Firebase URL:', firebaseConfig.databaseURL);
     initHistoryData();
     initCharts();
     startRealtimeListening();
