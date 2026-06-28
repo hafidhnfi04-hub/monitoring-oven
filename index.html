@@ -167,33 +167,10 @@
             background: #e74a3b;
             color: #fff;
         }
-        /* RELAY PANEL */
-        .relay-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 16px;
-            background: #f8f9fc;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-        .relay-item .relay-name {
-            font-weight: 600;
-            font-size: 0.9rem;
-        }
-        .relay-indicator {
-            width: 14px;
-            height: 14px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
-        .relay-indicator.on { background: #1cc88a; box-shadow: 0 0 10px rgba(28, 200, 138, 0.4); }
-        .relay-indicator.off { background: #e74a3b; }
         /* PID GRID */
         .pid-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 10px;
         }
         .pid-item {
@@ -237,7 +214,7 @@
         }
         @media (max-width: 480px) {
             .pid-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1fr 1fr;
             }
         }
         .text-green { color: #1cc88a; }
@@ -289,9 +266,6 @@
                 <i class="fas fa-sliders-h"></i> Kontrol PID
             </a>
             <a href="#" class="list-group-item">
-                <i class="fas fa-server"></i> Relay
-            </a>
-            <a href="#" class="list-group-item">
                 <i class="fas fa-history"></i> History
             </a>
             <a href="#" class="list-group-item">
@@ -331,7 +305,7 @@
             <i class="fas fa-sync-alt fa-spin"></i> Menghubungkan ke Firebase...
         </div>
 
-        <!-- STATS CARDS ROW -->
+        <!-- STATS CARDS ROW 1 -->
         <div class="row g-4 mb-4">
             <div class="col-xl-3 col-md-6">
                 <div class="card-stats border-left-primary">
@@ -395,7 +369,7 @@
             </div>
         </div>
 
-        <!-- SECOND ROW STATS -->
+        <!-- STATS CARDS ROW 2 -->
         <div class="row g-4 mb-4">
             <div class="col-xl-3 col-md-6">
                 <div class="card-stats border-left-purple">
@@ -491,36 +465,9 @@
             </div>
         </div>
 
-        <!-- RELAY & PID SECTION -->
+        <!-- PID & KELEMBABAN SECTION (Tanpa Relay) -->
         <div class="row g-4 mt-2">
-            <div class="col-lg-4">
-                <div class="chart-card">
-                    <div class="chart-title">
-                        <i class="fas fa-server"></i> Kontrol Relay
-                    </div>
-                    <div class="relay-item">
-                        <div>
-                            <span class="relay-indicator" id="relay1Indicator"></span>
-                            <span class="relay-name">Relay 1 (Pemanas)</span>
-                        </div>
-                        <span class="badge-status" id="relay1Badge">OFF</span>
-                    </div>
-                    <div class="relay-item">
-                        <div>
-                            <span class="relay-indicator" id="relay2Indicator"></span>
-                            <span class="relay-name">Relay 2 (Pendingin)</span>
-                        </div>
-                        <span class="badge-status" id="relay2Badge">OFF</span>
-                    </div>
-                    <div class="mt-3 text-center">
-                        <small class="text-muted">
-                            <span class="text-success">● ON</span> saat suhu &lt; setpoint &nbsp;|&nbsp; 
-                            <span class="text-danger">● OFF</span> saat suhu ≥ setpoint
-                        </small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-4">
+            <div class="col-lg-8">
                 <div class="chart-card">
                     <div class="chart-title">
                         <i class="fas fa-sliders-h"></i> Kontrol PID
@@ -543,7 +490,7 @@
                             <div class="pid-value" id="setpointReadonly">50.0</div>
                         </div>
                     </div>
-                    <div class="text-center mt-2">
+                    <div class="text-center mt-3">
                         <small class="text-muted">Nilai PID dari ESP32</small>
                     </div>
                 </div>
@@ -553,7 +500,7 @@
                     <div class="chart-title">
                         <i class="fas fa-chart-pie"></i> Kelembaban
                     </div>
-                    <div class="chart-wrapper" style="height:180px;">
+                    <div class="chart-wrapper" style="height:200px;">
                         <canvas id="humChart"></canvas>
                     </div>
                     <div class="text-center mt-2">
