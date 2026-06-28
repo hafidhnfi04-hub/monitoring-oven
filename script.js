@@ -14,7 +14,7 @@ const database = firebase.database();
 
 // ======================== STATE AWAL ========================
 let ds1 = 0.0, ds2 = 0.0, humidity = 0.0, setpoint = 50.0;
-let relay1 = 0, relay2 = 0, dimmer = 0, mode = 2;
+let dimmer = 0, mode = 2;
 let kp = 0, ki = 0, kd = 0, espTimestamp = "";
 
 const HISTORY_SIZE = 180; // 15 menit (5 detik interval)
@@ -35,10 +35,6 @@ const setpointReadonly = document.getElementById('setpointReadonly');
 const kpReadonly = document.getElementById('kpReadonly');
 const kiReadonly = document.getElementById('kiReadonly');
 const kdReadonly = document.getElementById('kdReadonly');
-const relay1Badge = document.getElementById('relay1Badge');
-const relay2Badge = document.getElementById('relay2Badge');
-const relay1Indicator = document.getElementById('relay1Indicator');
-const relay2Indicator = document.getElementById('relay2Indicator');
 const firebaseStatus = document.getElementById('firebaseStatus');
 
 // ======================== FUNGSI UTILITY ========================
@@ -70,26 +66,6 @@ function updateAllDisplay() {
     } else {
         modeDisplay.textContent = 'MANUAL';
         modeDisplay.style.color = '#f6c23e';
-    }
-    
-    // Relay
-    if (relay1 === 1) {
-        relay1Badge.textContent = 'ON';
-        relay1Badge.className = 'badge-status badge-on';
-        relay1Indicator.className = 'relay-indicator on';
-    } else {
-        relay1Badge.textContent = 'OFF';
-        relay1Badge.className = 'badge-status badge-off';
-        relay1Indicator.className = 'relay-indicator off';
-    }
-    if (relay2 === 1) {
-        relay2Badge.textContent = 'ON';
-        relay2Badge.className = 'badge-status badge-on';
-        relay2Indicator.className = 'relay-indicator on';
-    } else {
-        relay2Badge.textContent = 'OFF';
-        relay2Badge.className = 'badge-status badge-off';
-        relay2Indicator.className = 'relay-indicator off';
     }
     
     // Timestamp ESP32
@@ -124,8 +100,6 @@ function startRealtimeListening() {
             ds2 = data.ds18b20_2 !== undefined ? parseFloat(data.ds18b20_2) : ds2;
             humidity = data.kelembaban !== undefined ? parseFloat(data.kelembaban) : humidity;
             setpoint = data.setpoint !== undefined ? parseFloat(data.setpoint) : setpoint;
-            relay1 = data.relay1 !== undefined ? data.relay1 : relay1;
-            relay2 = data.relay2 !== undefined ? data.relay2 : relay2;
             dimmer = data.dimmer !== undefined ? data.dimmer : dimmer;
             kp = data.kp !== undefined ? parseFloat(data.kp) : kp;
             ki = data.ki !== undefined ? parseFloat(data.ki) : ki;
