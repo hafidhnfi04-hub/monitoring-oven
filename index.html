@@ -10,18 +10,16 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* ============================================
+           SEMUA CSS DI SINI (TIDAK PAKAI style.css)
+           ============================================ */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #f8f9fc;
         }
-        #wrapper {
-            display: flex;
-        }
+        #wrapper { display: flex; }
+        
         /* SIDEBAR */
         #sidebar-wrapper {
             min-height: 100vh;
@@ -29,7 +27,6 @@
             background: linear-gradient(180deg, #1a1d2e 0%, #2d3250 100%);
             color: #fff;
             flex-shrink: 0;
-            transition: all 0.3s;
             position: sticky;
             top: 0;
             height: 100vh;
@@ -42,9 +39,7 @@
             border-bottom: 1px solid rgba(255,255,255,0.05);
             text-align: center;
         }
-        #sidebar-wrapper .sidebar-heading i {
-            color: #4e73df;
-        }
+        #sidebar-wrapper .sidebar-heading i { color: #4e73df; }
         .list-group-item {
             background: transparent;
             color: rgba(255,255,255,0.7);
@@ -53,20 +48,14 @@
             transition: all 0.2s;
             cursor: pointer;
         }
-        .list-group-item:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.05);
-        }
+        .list-group-item:hover { color: #fff; background: rgba(255,255,255,0.05); }
         .list-group-item.active {
             color: #fff;
             background: rgba(78, 115, 223, 0.3);
             border-left: 4px solid #4e73df;
         }
-        .list-group-item i {
-            width: 24px;
-            margin-right: 10px;
-            color: #4e73df;
-        }
+        .list-group-item i { width: 24px; margin-right: 10px; color: #4e73df; }
+        
         /* MAIN CONTENT */
         #page-content-wrapper {
             flex: 1;
@@ -85,13 +74,9 @@
             padding: 0;
             margin: 0;
         }
-        .navbar-custom .breadcrumb-item a {
-            color: #4e73df;
-            text-decoration: none;
-        }
-        .navbar-custom .breadcrumb-item.active {
-            color: #6c757d;
-        }
+        .navbar-custom .breadcrumb-item a { color: #4e73df; text-decoration: none; }
+        .navbar-custom .breadcrumb-item.active { color: #6c757d; }
+        
         /* CARDS */
         .card-stats {
             border: none;
@@ -100,12 +85,8 @@
             transition: transform 0.2s;
             overflow: hidden;
         }
-        .card-stats:hover {
-            transform: translateY(-3px);
-        }
-        .card-stats .card-body {
-            padding: 20px 25px;
-        }
+        .card-stats:hover { transform: translateY(-3px); }
+        .card-stats .card-body { padding: 20px 25px; }
         .card-stats .card-title {
             font-size: 0.75rem;
             font-weight: 700;
@@ -119,16 +100,13 @@
             font-weight: 800;
             color: #1a1d2e;
         }
-        .card-stats .card-icon {
-            font-size: 2.5rem;
-            opacity: 0.3;
-        }
-        .card-stats.border-left-primary { border-left: 4px solid #4e73df; }
-        .card-stats.border-left-success { border-left: 4px solid #1cc88a; }
-        .card-stats.border-left-info { border-left: 4px solid #36b9cc; }
-        .card-stats.border-left-warning { border-left: 4px solid #f6c23e; }
-        .card-stats.border-left-danger { border-left: 4px solid #e74a3b; }
-        .card-stats.border-left-purple { border-left: 4px solid #9b59b6; }
+        .card-stats .card-icon { font-size: 2.5rem; opacity: 0.3; }
+        .border-left-primary { border-left: 4px solid #4e73df; }
+        .border-left-success { border-left: 4px solid #1cc88a; }
+        .border-left-info { border-left: 4px solid #36b9cc; }
+        .border-left-warning { border-left: 4px solid #f6c23e; }
+        .border-left-danger { border-left: 4px solid #e74a3b; }
+        .border-left-purple { border-left: 4px solid #9b59b6; }
         
         /* CHART CARD */
         .chart-card {
@@ -144,29 +122,19 @@
             color: #1a1d2e;
             margin-bottom: 15px;
         }
-        .chart-card .chart-title i {
-            color: #4e73df;
-            margin-right: 8px;
-        }
-        .chart-wrapper {
-            position: relative;
-            height: 250px;
-        }
-        /* STATUS BADGE */
+        .chart-card .chart-title i { color: #4e73df; margin-right: 8px; }
+        .chart-wrapper { position: relative; height: 250px; }
+        
+        /* BADGE */
         .badge-status {
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: 600;
         }
-        .badge-on {
-            background: #1cc88a;
-            color: #fff;
-        }
-        .badge-off {
-            background: #e74a3b;
-            color: #fff;
-        }
+        .badge-on { background: #1cc88a; color: #fff; }
+        .badge-off { background: #e74a3b; color: #fff; }
+        
         /* PID GRID */
         .pid-grid {
             display: grid;
@@ -190,6 +158,7 @@
             font-weight: 700;
             color: #1a1d2e;
         }
+        
         /* TIMESTAMP */
         .timestamp-display {
             font-family: 'Courier New', monospace;
@@ -197,32 +166,8 @@
             font-weight: 700;
             color: #4e73df;
         }
-        /* RESPONSIVE */
-        @media (max-width: 768px) {
-            #sidebar-wrapper {
-                display: none;
-            }
-            #page-content-wrapper {
-                padding: 15px;
-            }
-            .pid-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-            .card-stats .card-value {
-                font-size: 1.3rem;
-            }
-        }
-        @media (max-width: 480px) {
-            .pid-grid {
-                grid-template-columns: 1fr 1fr;
-            }
-        }
-        .text-green { color: #1cc88a; }
-        .text-red { color: #e74a3b; }
-        .text-blue { color: #4e73df; }
-        .text-yellow { color: #f6c23e; }
-        .text-purple { color: #9b59b6; }
         
+        /* FIREBASE STATUS */
         .firebase-status {
             padding: 8px 16px;
             border-radius: 8px;
@@ -238,6 +183,7 @@
             color: #c62828;
             border-left-color: #e74a3b;
         }
+        
         .footer-custom {
             text-align: center;
             padding: 20px 0 10px;
@@ -246,6 +192,22 @@
             border-top: 1px solid #e3e6f0;
             margin-top: 20px;
         }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            #sidebar-wrapper { display: none; }
+            #page-content-wrapper { padding: 15px; }
+            .pid-grid { grid-template-columns: 1fr 1fr; }
+            .card-stats .card-value { font-size: 1.3rem; }
+        }
+        @media (max-width: 480px) {
+            .pid-grid { grid-template-columns: 1fr 1fr; }
+        }
+        .text-green { color: #1cc88a; }
+        .text-red { color: #e74a3b; }
+        .text-blue { color: #4e73df; }
+        .text-yellow { color: #f6c23e; }
+        .text-purple { color: #9b59b6; }
     </style>
 </head>
 <body>
@@ -369,7 +331,7 @@
             </div>
         </div>
 
-        <!-- STATS CARDS ROW 2 -->
+        <!-- STATS CARDS ROW 2 (DIMMER & WAKTU OPERASI DI SINI) -->
         <div class="row g-4 mb-4">
             <div class="col-xl-3 col-md-6">
                 <div class="card-stats border-left-purple">
@@ -465,7 +427,7 @@
             </div>
         </div>
 
-        <!-- PID & KELEMBABAN SECTION (Tanpa Relay) -->
+        <!-- PID & KELEMBABAN SECTION -->
         <div class="row g-4 mt-2">
             <div class="col-lg-8">
                 <div class="chart-card">
