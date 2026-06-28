@@ -17,7 +17,7 @@
         <div class="header-content">
             <div class="title-section">
                 <h1>🌾 MONITORING OVEN PENGERING TEMBAKAU</h1>
-                <p class="subtitle">🔥 2 Termokopel (TC1 & TC2) | 💧 DHT22 (Kelembaban) | 🎛️ Sistem PID + 2 Relay Kontrol</p>
+                <p class="subtitle">🔥 2 Sensor DS18B20 | 💧 DHT22 (Kelembaban) | 🎛️ Sistem PID + 2 Relay Kontrol</p>
             </div>
             <div class="status-section">
                 <div class="sim-status" id="simStatusText">🟢 Terhubung ke ESP32</div>
@@ -27,27 +27,24 @@
 
     <!-- MAIN CONTENT -->
     <main class="main-content">
-        <!-- SENSOR CARDS ROW - TANPA STATUS TEXT DI BAWAH NILAI -->
+        <!-- SENSOR CARDS ROW -->
         <section class="sensor-cards">
-            <div class="card tc1">
+            <div class="card ds1">
                 <div class="card-info">
-                    <div class="card-label">TERMOKOPEL 1</div>
-                    <div class="card-value"><span id="tc1Value">0.0</span><span class="unit">°C</span></div>
-                    <!-- Status text dihapus -->
+                    <div class="card-label">DS18B20 1</div>
+                    <div class="card-value"><span id="ds1Value">0.0</span><span class="unit">°C</span></div>
                 </div>
             </div>
-            <div class="card tc2">
+            <div class="card ds2">
                 <div class="card-info">
-                    <div class="card-label">TERMOKOPEL 2</div>
-                    <div class="card-value"><span id="tc2Value">0.0</span><span class="unit">°C</span></div>
-                    <!-- Status text dihapus -->
+                    <div class="card-label">DS18B20 2</div>
+                    <div class="card-value"><span id="ds2Value">0.0</span><span class="unit">°C</span></div>
                 </div>
             </div>
             <div class="card dht">
                 <div class="card-info">
                     <div class="card-label">KELEMBABAN (RH)</div>
                     <div class="card-value"><span id="humValue">0.0</span><span class="unit">%</span></div>
-                    <!-- Status text dihapus -->
                 </div>
             </div>
         </section>
@@ -83,38 +80,41 @@
             <div class="left-column">
                 <div class="section-title">
                     <span class="title-icon">📈</span>
-                    <h2>GRAFIK MONITORING (30 MENIT HISTORY)</h2>
+                    <h2>SERIAL PLOTTER - MONITORING REAL TIME</h2>
                 </div>
                 
                 <div class="charts-container">
+                    <!-- GRAFIK 1: DS18B20 1 + Setpoint -->
                     <div class="chart-card">
                         <div class="chart-header">
                             <div class="chart-title">
                                 <span class="chart-icon">🌡️</span>
-                                <span class="chart-label tc1-label">TERMOKOPEL 1 (°C)</span>
+                                <span class="chart-label ds1-label">DS18B20 1 (°C)</span>
                             </div>
-                            <div class="chart-current" id="tc1Current">0.0°C</div>
+                            <div class="chart-current" id="ds1Current">0.0°C</div>
                         </div>
                         <div class="chart-wrapper">
-                            <canvas id="tc1Chart"></canvas>
+                            <canvas id="ds1Chart"></canvas>
                         </div>
-                        <div class="chart-note">📊 Skala: 0°C - 120°C | 📈 900 Data Point | ⏱️ 30 MENIT History | 🔵 Titik data setiap 2 MENIT (15 TITIK)</div>
+                        <div class="chart-note">📊 Serial Plotter Style | ⏱️ 30 MENIT History | 🔵 Titik data setiap 5 DETIK</div>
                     </div>
 
+                    <!-- GRAFIK 2: DS18B20 2 + Setpoint -->
                     <div class="chart-card">
                         <div class="chart-header">
                             <div class="chart-title">
                                 <span class="chart-icon">🌡️</span>
-                                <span class="chart-label tc2-label">TERMOKOPEL 2 (°C)</span>
+                                <span class="chart-label ds2-label">DS18B20 2 (°C)</span>
                             </div>
-                            <div class="chart-current" id="tc2Current">0.0°C</div>
+                            <div class="chart-current" id="ds2Current">0.0°C</div>
                         </div>
                         <div class="chart-wrapper">
-                            <canvas id="tc2Chart"></canvas>
+                            <canvas id="ds2Chart"></canvas>
                         </div>
-                        <div class="chart-note">📊 Skala: 0°C - 120°C | 📈 900 Data Point | ⏱️ 30 MENIT History | 🔵 Titik data setiap 2 MENIT (15 TITIK)</div>
+                        <div class="chart-note">📊 Serial Plotter Style | ⏱️ 30 MENIT History | 🔵 Titik data setiap 5 DETIK</div>
                     </div>
 
+                    <!-- GRAFIK 3: Kelembaban -->
                     <div class="chart-card">
                         <div class="chart-header">
                             <div class="chart-title">
@@ -126,7 +126,7 @@
                         <div class="chart-wrapper">
                             <canvas id="humChart"></canvas>
                         </div>
-                        <div class="chart-note">📊 Skala: 0% - 100% RH | 📈 900 Data Point | ⏱️ 30 MENIT History | 🔵 Titik data setiap 2 MENIT (15 TITIK)</div>
+                        <div class="chart-note">📊 Serial Plotter Style | ⏱️ 30 MENIT History | 🔵 Titik data setiap 5 DETIK</div>
                     </div>
                 </div>
             </div>
@@ -270,7 +270,7 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <p>⚙️ Data real-time dari ESP32 | Update setiap data berubah | 📈 900 data point (30 menit history) | 🔵 Titik data setiap 2 menit (15 titik) | 📡 Data tersimpan di Firebase Realtime Database</p>
+        <p>⚙️ Data real-time dari ESP32 | Update setiap 5 detik | 📈 Serial Plotter Style | 📡 Data tersimpan di Firebase Realtime Database</p>
     </footer>
 </div>
 
