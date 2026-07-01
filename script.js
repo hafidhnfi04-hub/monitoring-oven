@@ -32,10 +32,6 @@ const setpointDisplay = document.getElementById('setpointDisplay');
 const dimmerValue = document.getElementById('dimmerValue');
 const modeDisplay = document.getElementById('modeDisplay');
 const espTime = document.getElementById('espTime');
-const setpointReadonly = document.getElementById('setpointReadonly');
-const kpReadonly = document.getElementById('kpReadonly');
-const kiReadonly = document.getElementById('kiReadonly');
-const kdReadonly = document.getElementById('kdReadonly');
 const firebaseStatus = document.getElementById('firebaseStatus');
 
 // ======================== FUNGSI UTILITY ========================
@@ -65,11 +61,6 @@ function updateAllDisplay() {
         dimmerValue.innerHTML = `0 <small style="font-size:0.8rem; color:#e74a3b;">% (no data)</small>`;
     }
     
-    setpointReadonly.textContent = setpoint.toFixed(1);
-    kpReadonly.textContent = kp.toFixed(2);
-    kiReadonly.textContent = ki.toFixed(3);
-    kdReadonly.textContent = kd.toFixed(2);
-    
     // Mode
     if (mode === 2) {
         modeDisplay.textContent = 'AUTO';
@@ -96,9 +87,6 @@ function updateAllDisplay() {
     console.log('  humidity:', humidity);
     console.log('  setpoint:', setpoint);
     console.log('  dimmer:', dimmer);
-    console.log('  kp:', kp);
-    console.log('  ki:', ki);
-    console.log('  kd:', kd);
     console.log('  mode:', mode);
     console.log('  timestamp:', espTimestamp);
     
@@ -150,9 +138,6 @@ function startRealtimeListening() {
                 dimmer = 0;
             }
             
-            kp = data.kp !== undefined ? parseFloat(data.kp) : kp;
-            ki = data.ki !== undefined ? parseFloat(data.ki) : ki;
-            kd = data.kd !== undefined ? parseFloat(data.kd) : kd;
             mode = data.mode !== undefined ? data.mode : mode;
             espTimestamp = data.timestamp !== undefined ? data.timestamp : espTimestamp;
             
@@ -218,9 +203,9 @@ function initCharts() {
         scales: {
             y: {
                 min: 0,
-                max: 120,
+                max: 80, // Maksimal 80 derajat untuk grafik suhu
                 grid: { color: 'rgba(0,0,0,0.05)' },
-                ticks: { stepSize: 20 }
+                ticks: { stepSize: 10 }
             },
             x: {
                 grid: { display: false },
@@ -233,13 +218,14 @@ function initCharts() {
     const humOptions = JSON.parse(JSON.stringify(options));
     humOptions.scales.y.max = 100;
     humOptions.scales.y.ticks.stepSize = 20;
+    humOptions.scales.y.min = 0;
     
     ds1Chart = new Chart(document.getElementById('ds1Chart'), {
         type: 'line',
         data: {
             labels: historyTimestamps,
             datasets: [
-                { label: 'DS18B20 1', data: historyDS1, borderColor: '#e74a3b', fill: false, tension: 0, pointRadius: 1 },
+                { label: 'Suhu 1', data: historyDS1, borderColor: '#e74a3b', fill: false, tension: 0, pointRadius: 1 },
                 { label: 'Setpoint', data: historySetpoint, borderColor: '#1cc88a', borderDash: [5, 5], fill: false, tension: 0, pointRadius: 0 }
             ]
         },
@@ -251,7 +237,7 @@ function initCharts() {
         data: {
             labels: historyTimestamps,
             datasets: [
-                { label: 'DS18B20 2', data: historyDS2, borderColor: '#4e73df', fill: false, tension: 0, pointRadius: 1 },
+                { label: 'Suhu 2', data: historyDS2, borderColor: '#4e73df', fill: false, tension: 0, pointRadius: 1 },
                 { label: 'Setpoint', data: historySetpoint, borderColor: '#1cc88a', borderDash: [5, 5], fill: false, tension: 0, pointRadius: 0 }
             ]
         },
